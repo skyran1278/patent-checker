@@ -106,7 +106,7 @@ def check_infringement(patent_id, company_name, patents, companies):
         return {"error": "Patent not found"}
 
     # Find the company
-    company = next((c for c in companies["companies"] if c["name"].lower() == company_name.lower()), None)
+    company = next((c for c in companies if c["name"].lower() == company_name.lower()), None)
     if not company:
         return {"error": "Company not found"}
 
