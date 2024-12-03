@@ -14,4 +14,4 @@ RUN pip install -r requirements.txt
 EXPOSE 8000
 
 # Run the app
-CMD ["python", "main.py"]
+CMD ["python", "app/main.py"]
