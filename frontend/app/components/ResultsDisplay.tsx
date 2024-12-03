@@ -39,15 +39,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
         </p>
         <p className="text-sm text-gray-500">
           <span className="font-semibold">Overall Risk Assessment:</span>{" "}
-          <span
-            className={`inline-block px-2 py-1 text-sm rounded ${
-              results.overall_risk_assessment.includes("High")
-                ? "bg-red-100 text-red-600"
-                : "bg-yellow-100 text-yellow-600"
-            }`}
-          >
-            {results.overall_risk_assessment}
-          </span>
+          {results.overall_risk_assessment}
         </p>
       </div>
 
