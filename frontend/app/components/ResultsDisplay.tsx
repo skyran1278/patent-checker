@@ -7,10 +7,11 @@ interface Product {
   specific_features: string[];
 }
 
-interface ResultsDisplayProps {
+export interface ResultsDisplayProps {
   results: {
     patent_id: string;
     company_name: string;
+    analysis_date: string;
     overall_risk_assessment: string;
     top_infringing_products: Product[];
   } | null;
@@ -31,6 +32,10 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results }) => {
         <p className="text-sm text-gray-500">
           <span className="font-semibold">Company Name:</span>{" "}
           {results.company_name}
+        </p>
+        <p className="text-sm text-gray-500">
+          <span className="font-semibold">Analysis Date:</span>{" "}
+          {results.analysis_date}
         </p>
         <p className="text-sm text-gray-500">
           <span className="font-semibold">Overall Risk Assessment:</span>{" "}
