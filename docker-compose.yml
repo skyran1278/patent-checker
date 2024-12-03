@@ -1,10 +1,17 @@
 services:
   backend:
     build:
-      context: .
-      dockerfile: ./backend/Dockerfile
+      context: ./backend
     ports:
       - 8000:8000
+    env_file:
+      - ./backend/.env
+    networks:
+      - patent-checker
+  frontend:
+    build: ./frontend
+    ports:
+      - 3000:3000
     networks:
       - patent-checker
 
