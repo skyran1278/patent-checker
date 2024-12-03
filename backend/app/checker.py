@@ -2,6 +2,7 @@ import json
 from openai import OpenAI
 import os
 from datetime import datetime
+from fuzzy_match import fuzzy_match_company, fuzzy_match_patent
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
@@ -103,12 +104,16 @@ def check_infringement(patent_id, company_name, patents, companies):
     # Find the patent
     patent = next((p for p in patents if p["publication_number"] == patent_id), None)
     if not patent:
-        return {"error": "Patent not found"}
+        possible_patents = fuzzy_match_patent(patent_id)
+        if possible_patents:
+            patent = next((p for p in patents if p["publication_number"] == possible_patents[0][0]), None)
 
     # Find the company
     company = next((c for c in companies if c["name"].lower() == company_name.lower()), None)
     if not company:
-        return {"error": "Company not found"}
+        possible_companies = fuzzy_match_company(company_name)
+        if possible_companies:
+            company = next((c for c in companies if c["name"].lower() == possible_companies[0][0].lower()), None)
 
     return analyze_relevance_with_openai(
         json.dumps(patent),  # Serialize claims
