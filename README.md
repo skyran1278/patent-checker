@@ -1,10 +1,10 @@
 # Getting Started
 
-To start the application, run the following commands:
+To start the application, run the following commands with your OpenAI API key:
 
 ```sh
-echo "OPENAI_API_KEY=<your_openai_api_key>" >> backend/.env
-echo "NEXT_PUBLIC_API_URL=http://backend:8000" >> frontend/.env
+echo "OPENAI_API_KEY=<your_openai_api_key>" > backend/.env
+echo "NEXT_PUBLIC_API_URL=http://backend:8000" > frontend/.env
 docker compose build
 docker compose up -d
 ```
