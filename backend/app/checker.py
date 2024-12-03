@@ -1,6 +1,105 @@
 import json
+from openai import OpenAI
+import os
+from datetime import datetime
+
+client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
+)
+
+def analyze_relevance_with_openai(patent, description):
+    """
+    Use OpenAI API v1.0.0 to compute relevance between patent claims and a product description.
+    """
+    # Prepare the prompt
+    prompt = f"""
+    Return the top two infringing products of the company along with explanations of why these products potentially infringe the patent, specifically detailing which claims are at issue.
+
+    Patent:
+    {patent}
+
+    Products:
+    {description}
+    """
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o",  # Replace with desired model
+            messages=[{
+                "role": "user",
+                "content": prompt
+            }],
+            response_format = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "InfringementAnalysis",
+                    "description": "An analysis of the relevance between patent and products.",
+                    "schema": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "properties": {
+                          "patent_id": {
+                            "type": "string"
+                          },
+                          "company_name": {
+                            "type": "string"
+                          },
+                          "top_infringing_products": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "product_name": {
+                                  "type": "string"
+                                },
+                                "infringement_likelihood": {
+                                  "type": "string",
+                                  "enum": ["High", "Moderate", "Low"]
+                                },
+                                "relevant_claims": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "description": "The claim number with the patent. For example, '1', '2', '3'.",
+                                    "pattern": "^[0-9]+$"
+                                  }
+                                },
+                                "explanation": {
+                                  "type": "string"
+                                },
+                                "specific_features": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "required": ["product_name", "infringement_likelihood", "relevant_claims", "explanation", "specific_features"]
+                            }
+                          },
+                          "overall_risk_assessment": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["analysis_id", "patent_id", "company_name", "analysis_date", "top_infringing_products", "overall_risk_assessment"],
+                    }
+                }
+            }
+        )
+
+        # Parse the response
+        result = json.loads(completion.choices[0].message.content)
+        result["analysis_date"] = datetime.fromtimestamp(completion.created)
+        return result
+
+    except Exception as e:
+        print(f"Error using OpenAI API: {e}")
+        return 0, "Error in relevance analysis"
 
 def check_infringement(patent_id, company_name, patents, companies):
+    """
+    Refactored function to use OpenAI for relevance analysis.
+    """
     # Find the patent
     patent = next((p for p in patents if p["publication_number"] == patent_id), None)
     if not patent:
@@ -11,27 +110,7 @@ def check_infringement(patent_id, company_name, patents, companies):
     if not company:
         return {"error": "Company not found"}
 
-    # Compare claims with product descriptions
-    infringing_products = []
-    for product in company["products"]:
-        relevance_score = compute_relevance(patent["claims"], product["description"])
-        if relevance_score > 0.5:  # Assume a threshold for infringement
-            infringing_products.append({
-                "product_name": product["name"],
-                "infringement_likelihood": "High" if relevance_score > 0.75 else "Moderate",
-                "relevance_score": relevance_score,
-                "explanation": f"Claims overlap detected in product '{product['name']}'"
-            })
-
-    # Sort and return top two
-    infringing_products.sort(key=lambda x: x["relevance_score"], reverse=True)
-    return {
-        "patent_id": patent_id,
-        "company_name": company_name,
-        "top_infringing_products": infringing_products[:2]
-    }
-
-def compute_relevance(claims, description):
-    """Simple relevance computation for demonstration."""
-    matched_claims = sum(1 for claim in json.loads(claims) if claim["text"] in description)
-    return matched_claims / len(claims) if claims else 0
+    return analyze_relevance_with_openai(
+        json.dumps(patent),  # Serialize claims
+        json.dumps(company["products"])
+    )
