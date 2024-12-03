@@ -11,7 +11,7 @@ app = Flask(__name__)
 patents = load_patents("data/patents.json")
 companies = load_companies("data/company_products.json")
 
-@app.route('/check', methods=['POST'])
+@app.route('/check-infringement', methods=['POST'])
 def check():
     data = request.get_json()
     patent_id = data.get('patent_id')
