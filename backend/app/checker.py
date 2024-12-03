@@ -3,14 +3,15 @@ from openai import OpenAI
 import os
 from datetime import datetime
 from fuzzy_match import fuzzy_match_company, fuzzy_match_patent
+import uuid
 
 client = OpenAI(
     api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
 )
 
-def analyze_relevance_with_openai(patent, description):
+def analyze_relevance_with_openai(patent, products):
     """
-    Use OpenAI API v1.0.0 to compute relevance between patent claims and a product description.
+    Use OpenAI API to compute relevance between patent claims and a product description.
     """
     # Prepare the prompt
     prompt = f"""
@@ -20,7 +21,7 @@ def analyze_relevance_with_openai(patent, description):
     {patent}
 
     Products:
-    {description}
+    {products}
     """
 
     try:
@@ -39,12 +40,6 @@ def analyze_relevance_with_openai(patent, description):
                         "$schema": "http://json-schema.org/draft-07/schema#",
                         "type": "object",
                         "properties": {
-                          "patent_id": {
-                            "type": "string"
-                          },
-                          "company_name": {
-                            "type": "string"
-                          },
                           "top_infringing_products": {
                             "type": "array",
                             "items": {
@@ -115,7 +110,15 @@ def check_infringement(patent_id, company_name, patents, companies):
         if possible_companies:
             company = next((c for c in companies if c["name"].lower() == possible_companies[0][0].lower()), None)
 
-    return analyze_relevance_with_openai(
-        json.dumps(patent),  # Serialize claims
+    result = analyze_relevance_with_openai(
+        json.dumps(patent),
         json.dumps(company["products"])
     )
+
+    result["analysis_id"] = uuid.uuid4()
+    result["patent_id"] = patent['id']
+    result["company_name"] = company['name']
+
+    return result
+
+
