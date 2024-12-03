@@ -2,10 +2,12 @@
 
 import React, { useState } from "react";
 import InputForm from "./components/InputForm";
-import ResultsDisplay from "./components/ResultsDisplay";
+import ResultsDisplay, {
+  ResultsDisplayProps,
+} from "./components/ResultsDisplay";
 
 const HomePage: React.FC = () => {
-  const [results, setResults] = useState(null);
+  const [results, setResults] = useState<ResultsDisplayProps["results"]>(null);
 
   return (
     <div className="max-w-2xl mx-auto p-4">

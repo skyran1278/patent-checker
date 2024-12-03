@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { ResultsDisplayProps } from "./ResultsDisplay";
 
 interface InputFormProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: ResultsDisplayProps["results"]) => void;
 }
 
 const InputForm: React.FC<InputFormProps> = ({ onSubmit }) => {
